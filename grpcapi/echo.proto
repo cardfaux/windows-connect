@@ -1,12 +1,17 @@
-// echo.proto
 syntax = "proto3";
 
 package echo;
 
-service Echo {
-  rpc SendMessage (Message) returns (Message);
+option go_package = "github.com/cardfaux/windows-connect/grpcapi;grpcapi";
+
+service EchoService {
+  rpc SayHello (EchoRequest) returns (EchoResponse);
 }
 
-message Message {
-  string text = 1;
+message EchoRequest {
+  string message = 1;
+}
+
+message EchoResponse {
+  string message = 1;
 }
