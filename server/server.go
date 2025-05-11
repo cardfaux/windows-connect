@@ -2,37 +2,35 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net"
-	//"github.com/cardfaux/windows-connect/grpcapi"
+
+	"github.com/cardfaux/windows-connect/grpcapi"
+	"google.golang.org/grpc"
 )
 
-func main() {
-	ln, err := net.Listen("tcp", ":4444") // listen on all interfaces
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Server is listening on port 4444...")
-
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			fmt.Println("Connection error:", err)
-			continue
-		}
-		fmt.Println("Client connected:", conn.RemoteAddr())
-		go handleConnection(conn)
-	}
+type server struct {
+	grpcapi.UnimplementedEchoServiceServer
 }
 
-func handleConnection(conn net.Conn) {
-	defer conn.Close()
-	buffer := make([]byte, 1024)
-	n, err := conn.Read(buffer)
+func (s *server) Echo(ctx context.Context, req *grpcapi.EchoRequest) (*grpcapi.EchoResponse, error) {
+	log.Printf("Received: %s\n", req.GetMessage())
+	return &grpcapi.EchoResponse{Reply: "Hello from server"}, nil
+}
+
+func main() {
+	lis, err := net.Listen("tcp", ":4444")
 	if err != nil {
-		fmt.Println("Read error:", err)
-		return
+		log.Fatalf("Failed to listen: %v", err)
 	}
-	fmt.Printf("Received from client: %s\n", string(buffer[:n]))
-	conn.Write([]byte("Hello from server"))
+
+	s := grpc.NewServer()
+	grpcapi.RegisterEchoServiceServer(s, &server{})
+
+	fmt.Println("gRPC server is listening on port 4444...")
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("Failed to serve: %v", err)
+	}
 }

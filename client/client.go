@@ -1,45 +1,43 @@
-// client.go (TCP version with persistent connection)
+// client.go
 package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
-	"net"
+	"log"
 	"os"
-	//"github.com/cardfaux/windows-connect/grpcapi"
+	"time"
+
+	"github.com/cardfaux/windows-connect/grpcapi"
+	"google.golang.org/grpc"
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "192.168.0.151:4444")
+	conn, err := grpc.Dial("192.168.0.151:4444", grpc.WithInsecure())
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to connect: %v", err)
 	}
 	defer conn.Close()
 
-	fmt.Println("Connected to server")
-	conn.Write([]byte("Hello from client"))
+	client := grpcapi.NewEchoServiceClient(conn)
 
-	go func() {
-		buffer := make([]byte, 1024)
-		for {
-			n, err := conn.Read(buffer)
-			if err != nil {
-				fmt.Println("Read error:", err)
-				return
-			}
-			fmt.Printf("Received from server: %s\n", string(buffer[:n]))
-		}
-	}()
-
-	// Allow user to send messages to server
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Enter message: ")
-		if scanner.Scan() {
-			msg := scanner.Text()
-			conn.Write([]byte(msg))
-		} else {
+		if !scanner.Scan() {
 			break
 		}
+		msg := scanner.Text()
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		resp, err := client.Echo(ctx, &grpcapi.EchoRequest{Message: msg})
+		if err != nil {
+			log.Printf("Error calling Echo: %v", err)
+			continue
+		}
+		fmt.Printf("Response from server: %s\n", resp.GetReply())
 	}
 }

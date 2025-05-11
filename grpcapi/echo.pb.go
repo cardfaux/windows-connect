@@ -67,7 +67,7 @@ func (x *EchoRequest) GetMessage() string {
 
 type EchoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Reply         string                 `protobuf:"bytes,1,opt,name=reply,proto3" json:"reply,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -102,9 +102,9 @@ func (*EchoResponse) Descriptor() ([]byte, []int) {
 	return file_echo_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *EchoResponse) GetMessage() string {
+func (x *EchoResponse) GetReply() string {
 	if x != nil {
-		return x.Message
+		return x.Reply
 	}
 	return ""
 }
@@ -114,13 +114,13 @@ var File_echo_proto protoreflect.FileDescriptor
 const file_echo_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"echo.proto\x12\x04echo\"'\n" +
+	"echo.proto\x12\agrpcapi\"'\n" +
 	"\vEchoRequest\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"(\n" +
-	"\fEchoResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2@\n" +
-	"\vEchoService\x121\n" +
-	"\bSayHello\x12\x11.echo.EchoRequest\x1a\x12.echo.EchoResponseB5Z3github.com/cardfaux/windows-connect/grpcapi;grpcapib\x06proto3"
+	"\amessage\x18\x01 \x01(\tR\amessage\"$\n" +
+	"\fEchoResponse\x12\x14\n" +
+	"\x05reply\x18\x01 \x01(\tR\x05reply2B\n" +
+	"\vEchoService\x123\n" +
+	"\x04Echo\x12\x14.grpcapi.EchoRequest\x1a\x15.grpcapi.EchoResponseB-Z+github.com/cardfaux/windows-connect/grpcapib\x06proto3"
 
 var (
 	file_echo_proto_rawDescOnce sync.Once
@@ -136,12 +136,12 @@ func file_echo_proto_rawDescGZIP() []byte {
 
 var file_echo_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_echo_proto_goTypes = []any{
-	(*EchoRequest)(nil),  // 0: echo.EchoRequest
-	(*EchoResponse)(nil), // 1: echo.EchoResponse
+	(*EchoRequest)(nil),  // 0: grpcapi.EchoRequest
+	(*EchoResponse)(nil), // 1: grpcapi.EchoResponse
 }
 var file_echo_proto_depIdxs = []int32{
-	0, // 0: echo.EchoService.SayHello:input_type -> echo.EchoRequest
-	1, // 1: echo.EchoService.SayHello:output_type -> echo.EchoResponse
+	0, // 0: grpcapi.EchoService.Echo:input_type -> grpcapi.EchoRequest
+	1, // 1: grpcapi.EchoService.Echo:output_type -> grpcapi.EchoResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

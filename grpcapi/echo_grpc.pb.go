@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	EchoService_SayHello_FullMethodName = "/echo.EchoService/SayHello"
+	EchoService_Echo_FullMethodName = "/grpcapi.EchoService/Echo"
 )
 
 // EchoServiceClient is the client API for EchoService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EchoServiceClient interface {
-	SayHello(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error)
+	Echo(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error)
 }
 
 type echoServiceClient struct {
@@ -37,10 +37,10 @@ func NewEchoServiceClient(cc grpc.ClientConnInterface) EchoServiceClient {
 	return &echoServiceClient{cc}
 }
 
-func (c *echoServiceClient) SayHello(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error) {
+func (c *echoServiceClient) Echo(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(EchoResponse)
-	err := c.cc.Invoke(ctx, EchoService_SayHello_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, EchoService_Echo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c *echoServiceClient) SayHello(ctx context.Context, in *EchoRequest, opts 
 // All implementations must embed UnimplementedEchoServiceServer
 // for forward compatibility.
 type EchoServiceServer interface {
-	SayHello(context.Context, *EchoRequest) (*EchoResponse, error)
+	Echo(context.Context, *EchoRequest) (*EchoResponse, error)
 	mustEmbedUnimplementedEchoServiceServer()
 }
 
@@ -62,8 +62,8 @@ type EchoServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedEchoServiceServer struct{}
 
-func (UnimplementedEchoServiceServer) SayHello(context.Context, *EchoRequest) (*EchoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+func (UnimplementedEchoServiceServer) Echo(context.Context, *EchoRequest) (*EchoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Echo not implemented")
 }
 func (UnimplementedEchoServiceServer) mustEmbedUnimplementedEchoServiceServer() {}
 func (UnimplementedEchoServiceServer) testEmbeddedByValue()                     {}
@@ -86,20 +86,20 @@ func RegisterEchoServiceServer(s grpc.ServiceRegistrar, srv EchoServiceServer) {
 	s.RegisterService(&EchoService_ServiceDesc, srv)
 }
 
-func _EchoService_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _EchoService_Echo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EchoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EchoServiceServer).SayHello(ctx, in)
+		return srv.(EchoServiceServer).Echo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: EchoService_SayHello_FullMethodName,
+		FullMethod: EchoService_Echo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EchoServiceServer).SayHello(ctx, req.(*EchoRequest))
+		return srv.(EchoServiceServer).Echo(ctx, req.(*EchoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -108,12 +108,12 @@ func _EchoService_SayHello_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EchoService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "echo.EchoService",
+	ServiceName: "grpcapi.EchoService",
 	HandlerType: (*EchoServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SayHello",
-			Handler:    _EchoService_SayHello_Handler,
+			MethodName: "Echo",
+			Handler:    _EchoService_Echo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
