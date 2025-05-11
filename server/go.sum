@@ -1,3 +1,5 @@
+github.com/cardfaux/windows-connect/grpcapi v0.0.0-20250511214317-4636e32e28ec h1:/okrD4pfllYUKLJTaqzeMGP5WgWc9vgbp2Lo+vUBPGk=
+github.com/cardfaux/windows-connect/grpcapi v0.0.0-20250511214317-4636e32e28ec/go.mod h1:l53j/Q5Uk9vrgD9Zxo2eOdtg80oYTqjrHQk/p9u09+w=
 github.com/go-logr/logr v1.4.2 h1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=
 github.com/go-logr/logr v1.4.2/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
 github.com/go-logr/stdr v1.2.2 h1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=
