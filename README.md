@@ -82,3 +82,10 @@ Sent message to server.
 ## 🧪 Purpose
 
 This project exists solely for testing purposes. It helps verify basic TCP/IP connectivity between two machines using Go. There is no malicious code or logging—just a simple message-sending mechanism for connection validation.
+
+# How To Run This Test Windows Connection With NGROK
+
+1. Run the server with `go run server.go`
+2. Expose the gRPC port (e.g., 4444) by running `ngrok tcp 4444` in the terminal
+3. Copy the forwarded TCP address shown by ngrok, e.g.: `Forwarding tcp://0.tcp.ngrok.io:12345 -> localhost:4444`
+4. On your client (remote machine), connect to the ngrok address: `grpc.Dial("0.tcp.ngrok.io:12345", grpc.WithInsecure())`

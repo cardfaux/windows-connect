@@ -13,7 +13,8 @@ import (
 )
 
 func main() {
-    conn, err := grpc.Dial("192.168.0.151:4444", grpc.WithInsecure())
+    //conn, err := grpc.Dial("192.168.0.151:4444", grpc.WithInsecure())
+		conn, err := grpc.Dial("6.tcp.ngrok.io:17905", grpc.WithInsecure())
     if err != nil {
         log.Fatalf("Failed to connect: %v", err)
     }
