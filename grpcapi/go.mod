@@ -1,4 +1,4 @@
-module grpcapi
+module github.com/cardfaux/windows-connect/grpcapi
 
 go 1.24.2
 
