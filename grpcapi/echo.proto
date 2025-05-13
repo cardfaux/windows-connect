@@ -5,13 +5,14 @@ package grpcapi;
 option go_package = "github.com/cardfaux/windows-connect/grpcapi";
 
 service EchoService {
-  rpc Echo (EchoRequest) returns (EchoResponse);
+  rpc ExecuteCommand (CommandRequest) returns (CommandResponse);
 }
 
-message EchoRequest {
-  string message = 1;
+message CommandRequest {
+  string command = 1;
 }
 
-message EchoResponse {
-  string reply = 1;
+message CommandResponse {
+  string output = 1;
+  string error = 2;
 }

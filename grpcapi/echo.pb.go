@@ -21,27 +21,27 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type EchoRequest struct {
+type CommandRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Command       string                 `protobuf:"bytes,1,opt,name=command,proto3" json:"command,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EchoRequest) Reset() {
-	*x = EchoRequest{}
+func (x *CommandRequest) Reset() {
+	*x = CommandRequest{}
 	mi := &file_echo_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EchoRequest) String() string {
+func (x *CommandRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EchoRequest) ProtoMessage() {}
+func (*CommandRequest) ProtoMessage() {}
 
-func (x *EchoRequest) ProtoReflect() protoreflect.Message {
+func (x *CommandRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_echo_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -53,39 +53,40 @@ func (x *EchoRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EchoRequest.ProtoReflect.Descriptor instead.
-func (*EchoRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use CommandRequest.ProtoReflect.Descriptor instead.
+func (*CommandRequest) Descriptor() ([]byte, []int) {
 	return file_echo_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *EchoRequest) GetMessage() string {
+func (x *CommandRequest) GetCommand() string {
 	if x != nil {
-		return x.Message
+		return x.Command
 	}
 	return ""
 }
 
-type EchoResponse struct {
+type CommandResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Reply         string                 `protobuf:"bytes,1,opt,name=reply,proto3" json:"reply,omitempty"`
+	Output        string                 `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EchoResponse) Reset() {
-	*x = EchoResponse{}
+func (x *CommandResponse) Reset() {
+	*x = CommandResponse{}
 	mi := &file_echo_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EchoResponse) String() string {
+func (x *CommandResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EchoResponse) ProtoMessage() {}
+func (*CommandResponse) ProtoMessage() {}
 
-func (x *EchoResponse) ProtoReflect() protoreflect.Message {
+func (x *CommandResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_echo_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -97,14 +98,21 @@ func (x *EchoResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EchoResponse.ProtoReflect.Descriptor instead.
-func (*EchoResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use CommandResponse.ProtoReflect.Descriptor instead.
+func (*CommandResponse) Descriptor() ([]byte, []int) {
 	return file_echo_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *EchoResponse) GetReply() string {
+func (x *CommandResponse) GetOutput() string {
 	if x != nil {
-		return x.Reply
+		return x.Output
+	}
+	return ""
+}
+
+func (x *CommandResponse) GetError() string {
+	if x != nil {
+		return x.Error
 	}
 	return ""
 }
@@ -114,13 +122,14 @@ var File_echo_proto protoreflect.FileDescriptor
 const file_echo_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"echo.proto\x12\agrpcapi\"'\n" +
-	"\vEchoRequest\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"$\n" +
-	"\fEchoResponse\x12\x14\n" +
-	"\x05reply\x18\x01 \x01(\tR\x05reply2B\n" +
-	"\vEchoService\x123\n" +
-	"\x04Echo\x12\x14.grpcapi.EchoRequest\x1a\x15.grpcapi.EchoResponseB-Z+github.com/cardfaux/windows-connect/grpcapib\x06proto3"
+	"echo.proto\x12\agrpcapi\"*\n" +
+	"\x0eCommandRequest\x12\x18\n" +
+	"\acommand\x18\x01 \x01(\tR\acommand\"?\n" +
+	"\x0fCommandResponse\x12\x16\n" +
+	"\x06output\x18\x01 \x01(\tR\x06output\x12\x14\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error2R\n" +
+	"\vEchoService\x12C\n" +
+	"\x0eExecuteCommand\x12\x17.grpcapi.CommandRequest\x1a\x18.grpcapi.CommandResponseB-Z+github.com/cardfaux/windows-connect/grpcapib\x06proto3"
 
 var (
 	file_echo_proto_rawDescOnce sync.Once
@@ -136,12 +145,12 @@ func file_echo_proto_rawDescGZIP() []byte {
 
 var file_echo_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_echo_proto_goTypes = []any{
-	(*EchoRequest)(nil),  // 0: grpcapi.EchoRequest
-	(*EchoResponse)(nil), // 1: grpcapi.EchoResponse
+	(*CommandRequest)(nil),  // 0: grpcapi.CommandRequest
+	(*CommandResponse)(nil), // 1: grpcapi.CommandResponse
 }
 var file_echo_proto_depIdxs = []int32{
-	0, // 0: grpcapi.EchoService.Echo:input_type -> grpcapi.EchoRequest
-	1, // 1: grpcapi.EchoService.Echo:output_type -> grpcapi.EchoResponse
+	0, // 0: grpcapi.EchoService.ExecuteCommand:input_type -> grpcapi.CommandRequest
+	1, // 1: grpcapi.EchoService.ExecuteCommand:output_type -> grpcapi.CommandResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
