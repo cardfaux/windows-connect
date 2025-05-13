@@ -15,9 +15,11 @@ type server struct {
 }
 
 func (s *server) ExecuteCommand(ctx context.Context, req *grpcapi.CommandRequest) (*grpcapi.CommandResponse, error) {
-	log.Printf("Client asked to execute: %s", req.Command)
+	log.Printf("Server received command: %s", req.Command)
+
+	// Send the response back to the client (you can modify this to fit your needs)
 	return &grpcapi.CommandResponse{
-		Output: "This should be implemented on the client, not server.",
+		Output: "Command received by client: " + req.Command,
 	}, nil
 }
 

@@ -128,7 +128,7 @@ const file_grpcapi_echo_proto_rawDesc = "" +
 	"\x06output\x18\x01 \x01(\tR\x06output\x12\x14\n" +
 	"\x05error\x18\x02 \x01(\tR\x05error2R\n" +
 	"\vEchoService\x12C\n" +
-	"\x0eExecuteCommand\x12\x17.grpcapi.CommandRequest\x1a\x18.grpcapi.CommandResponseB-Z+github.com/cardfaux/windows-connect/grpcapib\x06proto3"
+	"\x0eExecuteCommand\x12\x17.grpcapi.CommandRequest\x1a\x18.grpcapi.CommandResponseB5Z3github.com/cardfaux/windows-connect/grpcapi;grpcapib\x06proto3"
 
 var (
 	file_grpcapi_echo_proto_rawDescOnce sync.Once

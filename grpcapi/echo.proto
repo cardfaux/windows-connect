@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package grpcapi;
 
-option go_package = "github.com/cardfaux/windows-connect/grpcapi";
+option go_package = "github.com/cardfaux/windows-connect/grpcapi;grpcapi";
 
 service EchoService {
   rpc ExecuteCommand (CommandRequest) returns (CommandResponse);

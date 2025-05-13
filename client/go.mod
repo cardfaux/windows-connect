@@ -1,9 +1,10 @@
-module client
+module github.com/cardfaux/windows-connect/client
 
 go 1.24.2
 
 require (
 	github.com/cardfaux/windows-connect/grpcapi v0.1.0
+	github.com/joho/godotenv v1.5.1
 	google.golang.org/grpc v1.72.0
 )
 
@@ -14,3 +15,5 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250218202821-56aae31c358a // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
+
+replace github.com/cardfaux/windows-connect/grpcapi => ../grpcapi

