@@ -89,3 +89,48 @@ This project exists solely for testing purposes. It helps verify basic TCP/IP co
 2. Expose the gRPC port (e.g., 4444) by running `ngrok tcp 4444` in the terminal
 3. Copy the forwarded TCP address shown by ngrok, e.g.: `Forwarding tcp://0.tcp.ngrok.io:12345 -> localhost:4444`
 4. On your client (remote machine), connect to the ngrok address: `grpc.Dial("0.tcp.ngrok.io:12345", grpc.WithInsecure())`
+
+# Run This With Different Shells From The Server
+
+## Running Commands on the Client: Shell Prefix Usage
+
+When sending commands from the server to the client, you can specify which shell the client should use to execute the command by **prefixing the command string** with the shell name followed by a colon (`:`).
+
+### Supported Shell Prefixes and Examples
+
+| Platform        | Shell        | Example Command                |
+| --------------- | ------------ | ------------------------------ |
+| **Windows**     | `cmd`        | `cmd: dir /w`                  |
+| **Windows**     | `powershell` | `powershell: Get-Process`      |
+| **macOS/Linux** | `sh`         | `sh: ls -la`                   |
+| **macOS/Linux** | `bash`       | `bash: echo "Hello from bash"` |
+
+### How It Works
+
+- The server sends the full command string including the prefix to the client.
+- The client reads the prefix (e.g., `cmd`, `powershell`, `sh`, or `bash`) and runs the rest of the command using the specified shell.
+- If no prefix is provided, the client can default to a predefined shell depending on the operating system.
+
+---
+
+### Example Usage
+
+To list files on a Windows client using `cmd`:
+
+```text
+cmd: dir /w
+```
+
+To list processes on a Windows client using PowerShell:
+
+```text
+powershell: Get-Process
+```
+
+To list files on a Linux or macOS client using `sh`:
+
+```text
+sh: ls -la
+```
+
+===Prefixes are case-insensitive (e.g., CMD:, cmd:, or Cmd: all work).===

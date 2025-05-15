@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v5.29.3
-// source: grpcapi/echo.proto
+// source: echo.proto
 
 package grpcapi
 
@@ -24,13 +24,14 @@ const (
 type CommandRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Command       string                 `protobuf:"bytes,1,opt,name=command,proto3" json:"command,omitempty"`
+	Shell         string                 `protobuf:"bytes,2,opt,name=shell,proto3" json:"shell,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CommandRequest) Reset() {
 	*x = CommandRequest{}
-	mi := &file_grpcapi_echo_proto_msgTypes[0]
+	mi := &file_echo_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +43,7 @@ func (x *CommandRequest) String() string {
 func (*CommandRequest) ProtoMessage() {}
 
 func (x *CommandRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_grpcapi_echo_proto_msgTypes[0]
+	mi := &file_echo_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,7 +56,7 @@ func (x *CommandRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandRequest.ProtoReflect.Descriptor instead.
 func (*CommandRequest) Descriptor() ([]byte, []int) {
-	return file_grpcapi_echo_proto_rawDescGZIP(), []int{0}
+	return file_echo_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *CommandRequest) GetCommand() string {
@@ -65,17 +66,23 @@ func (x *CommandRequest) GetCommand() string {
 	return ""
 }
 
+func (x *CommandRequest) GetShell() string {
+	if x != nil {
+		return x.Shell
+	}
+	return ""
+}
+
 type CommandResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Output        string                 `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"`
-	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CommandResponse) Reset() {
 	*x = CommandResponse{}
-	mi := &file_grpcapi_echo_proto_msgTypes[1]
+	mi := &file_echo_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -87,7 +94,7 @@ func (x *CommandResponse) String() string {
 func (*CommandResponse) ProtoMessage() {}
 
 func (x *CommandResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_grpcapi_echo_proto_msgTypes[1]
+	mi := &file_echo_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -100,7 +107,7 @@ func (x *CommandResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandResponse.ProtoReflect.Descriptor instead.
 func (*CommandResponse) Descriptor() ([]byte, []int) {
-	return file_grpcapi_echo_proto_rawDescGZIP(), []int{1}
+	return file_echo_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CommandResponse) GetOutput() string {
@@ -110,44 +117,38 @@ func (x *CommandResponse) GetOutput() string {
 	return ""
 }
 
-func (x *CommandResponse) GetError() string {
-	if x != nil {
-		return x.Error
-	}
-	return ""
-}
+var File_echo_proto protoreflect.FileDescriptor
 
-var File_grpcapi_echo_proto protoreflect.FileDescriptor
-
-const file_grpcapi_echo_proto_rawDesc = "" +
+const file_echo_proto_rawDesc = "" +
 	"\n" +
-	"\x12grpcapi/echo.proto\x12\agrpcapi\"*\n" +
+	"\n" +
+	"echo.proto\x12\agrpcapi\"@\n" +
 	"\x0eCommandRequest\x12\x18\n" +
-	"\acommand\x18\x01 \x01(\tR\acommand\"?\n" +
+	"\acommand\x18\x01 \x01(\tR\acommand\x12\x14\n" +
+	"\x05shell\x18\x02 \x01(\tR\x05shell\")\n" +
 	"\x0fCommandResponse\x12\x16\n" +
-	"\x06output\x18\x01 \x01(\tR\x06output\x12\x14\n" +
-	"\x05error\x18\x02 \x01(\tR\x05error2R\n" +
+	"\x06output\x18\x01 \x01(\tR\x06output2R\n" +
 	"\vEchoService\x12C\n" +
 	"\x0eExecuteCommand\x12\x17.grpcapi.CommandRequest\x1a\x18.grpcapi.CommandResponseB5Z3github.com/cardfaux/windows-connect/grpcapi;grpcapib\x06proto3"
 
 var (
-	file_grpcapi_echo_proto_rawDescOnce sync.Once
-	file_grpcapi_echo_proto_rawDescData []byte
+	file_echo_proto_rawDescOnce sync.Once
+	file_echo_proto_rawDescData []byte
 )
 
-func file_grpcapi_echo_proto_rawDescGZIP() []byte {
-	file_grpcapi_echo_proto_rawDescOnce.Do(func() {
-		file_grpcapi_echo_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_grpcapi_echo_proto_rawDesc), len(file_grpcapi_echo_proto_rawDesc)))
+func file_echo_proto_rawDescGZIP() []byte {
+	file_echo_proto_rawDescOnce.Do(func() {
+		file_echo_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_echo_proto_rawDesc), len(file_echo_proto_rawDesc)))
 	})
-	return file_grpcapi_echo_proto_rawDescData
+	return file_echo_proto_rawDescData
 }
 
-var file_grpcapi_echo_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_grpcapi_echo_proto_goTypes = []any{
+var file_echo_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_echo_proto_goTypes = []any{
 	(*CommandRequest)(nil),  // 0: grpcapi.CommandRequest
 	(*CommandResponse)(nil), // 1: grpcapi.CommandResponse
 }
-var file_grpcapi_echo_proto_depIdxs = []int32{
+var file_echo_proto_depIdxs = []int32{
 	0, // 0: grpcapi.EchoService.ExecuteCommand:input_type -> grpcapi.CommandRequest
 	1, // 1: grpcapi.EchoService.ExecuteCommand:output_type -> grpcapi.CommandResponse
 	1, // [1:2] is the sub-list for method output_type
@@ -157,26 +158,26 @@ var file_grpcapi_echo_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_grpcapi_echo_proto_init() }
-func file_grpcapi_echo_proto_init() {
-	if File_grpcapi_echo_proto != nil {
+func init() { file_echo_proto_init() }
+func file_echo_proto_init() {
+	if File_echo_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_grpcapi_echo_proto_rawDesc), len(file_grpcapi_echo_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_echo_proto_rawDesc), len(file_echo_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_grpcapi_echo_proto_goTypes,
-		DependencyIndexes: file_grpcapi_echo_proto_depIdxs,
-		MessageInfos:      file_grpcapi_echo_proto_msgTypes,
+		GoTypes:           file_echo_proto_goTypes,
+		DependencyIndexes: file_echo_proto_depIdxs,
+		MessageInfos:      file_echo_proto_msgTypes,
 	}.Build()
-	File_grpcapi_echo_proto = out.File
-	file_grpcapi_echo_proto_goTypes = nil
-	file_grpcapi_echo_proto_depIdxs = nil
+	File_echo_proto = out.File
+	file_echo_proto_goTypes = nil
+	file_echo_proto_depIdxs = nil
 }
