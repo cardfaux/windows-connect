@@ -16,10 +16,20 @@ message CommandMessage {
 }
 
 message CommandRequest {
-    string command = 1;
-    string shell = 2;
+    // Enum for fixed commands
+    CommandType command = 1;
+    string argument = 2; // e.g. path for LIST_FILES or GET_FILE
+}
+
+enum CommandType {
+    UNKNOWN = 0;
+    LIST_FILES = 1;
+    GET_FILE = 2;
+    GET_INFO = 3; // e.g. get file info like size, mod time
 }
 
 message CommandResponse {
-    string output = 1;
+    string output = 1; // can be JSON or plain text depending on command
+    bool success = 2;
+    string error = 3;
 }

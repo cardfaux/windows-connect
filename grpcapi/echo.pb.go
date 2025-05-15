@@ -21,6 +21,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type CommandType int32
+
+const (
+	CommandType_UNKNOWN    CommandType = 0
+	CommandType_LIST_FILES CommandType = 1
+	CommandType_GET_FILE   CommandType = 2
+	CommandType_GET_INFO   CommandType = 3 // e.g. get file info like size, mod time
+)
+
+// Enum value maps for CommandType.
+var (
+	CommandType_name = map[int32]string{
+		0: "UNKNOWN",
+		1: "LIST_FILES",
+		2: "GET_FILE",
+		3: "GET_INFO",
+	}
+	CommandType_value = map[string]int32{
+		"UNKNOWN":    0,
+		"LIST_FILES": 1,
+		"GET_FILE":   2,
+		"GET_INFO":   3,
+	}
+)
+
+func (x CommandType) Enum() *CommandType {
+	p := new(CommandType)
+	*p = x
+	return p
+}
+
+func (x CommandType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CommandType) Descriptor() protoreflect.EnumDescriptor {
+	return file_echo_proto_enumTypes[0].Descriptor()
+}
+
+func (CommandType) Type() protoreflect.EnumType {
+	return &file_echo_proto_enumTypes[0]
+}
+
+func (x CommandType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CommandType.Descriptor instead.
+func (CommandType) EnumDescriptor() ([]byte, []int) {
+	return file_echo_proto_rawDescGZIP(), []int{0}
+}
+
 type CommandMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Message:
@@ -104,9 +156,10 @@ func (*CommandMessage_CommandRequest) isCommandMessage_Message() {}
 func (*CommandMessage_CommandResponse) isCommandMessage_Message() {}
 
 type CommandRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Command       string                 `protobuf:"bytes,1,opt,name=command,proto3" json:"command,omitempty"`
-	Shell         string                 `protobuf:"bytes,2,opt,name=shell,proto3" json:"shell,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Enum for fixed commands
+	Command       CommandType `protobuf:"varint,1,opt,name=command,proto3,enum=grpcapi.CommandType" json:"command,omitempty"`
+	Argument      string      `protobuf:"bytes,2,opt,name=argument,proto3" json:"argument,omitempty"` // e.g. path for LIST_FILES or GET_FILE
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -141,23 +194,25 @@ func (*CommandRequest) Descriptor() ([]byte, []int) {
 	return file_echo_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CommandRequest) GetCommand() string {
+func (x *CommandRequest) GetCommand() CommandType {
 	if x != nil {
 		return x.Command
 	}
-	return ""
+	return CommandType_UNKNOWN
 }
 
-func (x *CommandRequest) GetShell() string {
+func (x *CommandRequest) GetArgument() string {
 	if x != nil {
-		return x.Shell
+		return x.Argument
 	}
 	return ""
 }
 
 type CommandResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Output        string                 `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"`
+	Output        string                 `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"` // can be JSON or plain text depending on command
+	Success       bool                   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
+	Error         string                 `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -199,6 +254,20 @@ func (x *CommandResponse) GetOutput() string {
 	return ""
 }
 
+func (x *CommandResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *CommandResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
 var File_echo_proto protoreflect.FileDescriptor
 
 const file_echo_proto_rawDesc = "" +
@@ -208,12 +277,20 @@ const file_echo_proto_rawDesc = "" +
 	"\x0eCommandMessage\x12B\n" +
 	"\x0fcommand_request\x18\x01 \x01(\v2\x17.grpcapi.CommandRequestH\x00R\x0ecommandRequest\x12E\n" +
 	"\x10command_response\x18\x02 \x01(\v2\x18.grpcapi.CommandResponseH\x00R\x0fcommandResponseB\t\n" +
-	"\amessage\"@\n" +
-	"\x0eCommandRequest\x12\x18\n" +
-	"\acommand\x18\x01 \x01(\tR\acommand\x12\x14\n" +
-	"\x05shell\x18\x02 \x01(\tR\x05shell\")\n" +
+	"\amessage\"\\\n" +
+	"\x0eCommandRequest\x12.\n" +
+	"\acommand\x18\x01 \x01(\x0e2\x14.grpcapi.CommandTypeR\acommand\x12\x1a\n" +
+	"\bargument\x18\x02 \x01(\tR\bargument\"Y\n" +
 	"\x0fCommandResponse\x12\x16\n" +
-	"\x06output\x18\x01 \x01(\tR\x06output2U\n" +
+	"\x06output\x18\x01 \x01(\tR\x06output\x12\x18\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess\x12\x14\n" +
+	"\x05error\x18\x03 \x01(\tR\x05error*F\n" +
+	"\vCommandType\x12\v\n" +
+	"\aUNKNOWN\x10\x00\x12\x0e\n" +
+	"\n" +
+	"LIST_FILES\x10\x01\x12\f\n" +
+	"\bGET_FILE\x10\x02\x12\f\n" +
+	"\bGET_INFO\x10\x032U\n" +
 	"\vEchoService\x12F\n" +
 	"\x0eExecuteCommand\x12\x17.grpcapi.CommandMessage\x1a\x17.grpcapi.CommandMessage(\x010\x01B5Z3github.com/cardfaux/windows-connect/grpcapi;grpcapib\x06proto3"
 
@@ -229,22 +306,25 @@ func file_echo_proto_rawDescGZIP() []byte {
 	return file_echo_proto_rawDescData
 }
 
+var file_echo_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_echo_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_echo_proto_goTypes = []any{
-	(*CommandMessage)(nil),  // 0: grpcapi.CommandMessage
-	(*CommandRequest)(nil),  // 1: grpcapi.CommandRequest
-	(*CommandResponse)(nil), // 2: grpcapi.CommandResponse
+	(CommandType)(0),        // 0: grpcapi.CommandType
+	(*CommandMessage)(nil),  // 1: grpcapi.CommandMessage
+	(*CommandRequest)(nil),  // 2: grpcapi.CommandRequest
+	(*CommandResponse)(nil), // 3: grpcapi.CommandResponse
 }
 var file_echo_proto_depIdxs = []int32{
-	1, // 0: grpcapi.CommandMessage.command_request:type_name -> grpcapi.CommandRequest
-	2, // 1: grpcapi.CommandMessage.command_response:type_name -> grpcapi.CommandResponse
-	0, // 2: grpcapi.EchoService.ExecuteCommand:input_type -> grpcapi.CommandMessage
-	0, // 3: grpcapi.EchoService.ExecuteCommand:output_type -> grpcapi.CommandMessage
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	2, // 0: grpcapi.CommandMessage.command_request:type_name -> grpcapi.CommandRequest
+	3, // 1: grpcapi.CommandMessage.command_response:type_name -> grpcapi.CommandResponse
+	0, // 2: grpcapi.CommandRequest.command:type_name -> grpcapi.CommandType
+	1, // 3: grpcapi.EchoService.ExecuteCommand:input_type -> grpcapi.CommandMessage
+	1, // 4: grpcapi.EchoService.ExecuteCommand:output_type -> grpcapi.CommandMessage
+	4, // [4:5] is the sub-list for method output_type
+	3, // [3:4] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_echo_proto_init() }
@@ -261,13 +341,14 @@ func file_echo_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_echo_proto_rawDesc), len(file_echo_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_echo_proto_goTypes,
 		DependencyIndexes: file_echo_proto_depIdxs,
+		EnumInfos:         file_echo_proto_enumTypes,
 		MessageInfos:      file_echo_proto_msgTypes,
 	}.Build()
 	File_echo_proto = out.File

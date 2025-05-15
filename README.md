@@ -180,3 +180,81 @@ sh: ls -la
 
 - 🔼 Server → Client: CommandResponse.output = command string
 - 🔽 Client → Server: CommandRequest.command = output, CommandRequest.shell = shell used
+
+# HOW TO RUN THE COMMANDS FOR THE LATEST VERSION
+
+## How to Run Commands on the gRPC Server
+
+Once your gRPC server is running and connected to a client, you can enter commands directly into the server console. These commands tell the client what to do, such as listing files, reading a file, or getting file info.
+
+---
+
+### Command Format
+
+#### `COMMAND_TYPE:ARGUMENT`
+
+- `COMMAND_TYPE` — The type of command you want to execute. Currently supported commands are:
+
+  - `LIST_FILES` — List all files and directories inside the specified directory.
+  - `GET_FILE` — Retrieve the contents of a specified file.
+  - `GET_INFO` — Get information about a file or directory (size, modification date, etc.).
+
+- `ARGUMENT` — The path or target for the command (e.g., a directory path for `LIST_FILES` or a file path for `GET_FILE`).
+
+---
+
+## Examples
+
+### List files in a directory
+
+To list all files and folders inside `/home/user` (Linux/macOS):
+
+`LIST_FILES:/home/user`
+
+On Windows, to list files in `C:\Users\YourName\Documents`:
+
+`LIST_FILES:C:\Users\YourName\Documents`
+
+### Read the contents of a file
+
+To get the contents of `/etc/hosts` (Linux/macOS):
+
+`GET_FILE:/etc/hosts`
+
+On Windows, to read `C:\Windows\System32\drivers\etc\hosts`:
+
+`GET_FILE:C:\Windows\System32\drivers\etc\hosts`
+
+---
+
+### Get information about a file or directory
+
+To get info about `/var/log`:
+
+`GET_INFO:/var/log`
+
+To get info about `C:\Program Files` on Windows:
+
+`GET_INFO:C:\Program Files`
+
+---
+
+## Notes
+
+- Make sure the client machine has permission to access the specified path.
+- Paths should be valid on the **client machine**, not the server.
+- If a command or path is invalid, you will get an error response printed in the server console.
+
+---
+
+## Summary
+
+| Command    | Example                         | Purpose                     |
+| ---------- | ------------------------------- | --------------------------- |
+| LIST_FILES | `LIST_FILES:/path/to/directory` | List files and directories  |
+| GET_FILE   | `GET_FILE:/path/to/file`        | Retrieve file contents      |
+| GET_INFO   | `GET_INFO:/path/to/file_or_dir` | Get metadata about file/dir |
+
+---
+
+Enter these commands in the server terminal prompt and press **Enter** to send them to the client and see the results.
