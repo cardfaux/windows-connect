@@ -21,6 +21,88 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type CommandMessage struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Message:
+	//
+	//	*CommandMessage_CommandRequest
+	//	*CommandMessage_CommandResponse
+	Message       isCommandMessage_Message `protobuf_oneof:"message"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommandMessage) Reset() {
+	*x = CommandMessage{}
+	mi := &file_echo_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommandMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommandMessage) ProtoMessage() {}
+
+func (x *CommandMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_echo_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommandMessage.ProtoReflect.Descriptor instead.
+func (*CommandMessage) Descriptor() ([]byte, []int) {
+	return file_echo_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *CommandMessage) GetMessage() isCommandMessage_Message {
+	if x != nil {
+		return x.Message
+	}
+	return nil
+}
+
+func (x *CommandMessage) GetCommandRequest() *CommandRequest {
+	if x != nil {
+		if x, ok := x.Message.(*CommandMessage_CommandRequest); ok {
+			return x.CommandRequest
+		}
+	}
+	return nil
+}
+
+func (x *CommandMessage) GetCommandResponse() *CommandResponse {
+	if x != nil {
+		if x, ok := x.Message.(*CommandMessage_CommandResponse); ok {
+			return x.CommandResponse
+		}
+	}
+	return nil
+}
+
+type isCommandMessage_Message interface {
+	isCommandMessage_Message()
+}
+
+type CommandMessage_CommandRequest struct {
+	CommandRequest *CommandRequest `protobuf:"bytes,1,opt,name=command_request,json=commandRequest,proto3,oneof"`
+}
+
+type CommandMessage_CommandResponse struct {
+	CommandResponse *CommandResponse `protobuf:"bytes,2,opt,name=command_response,json=commandResponse,proto3,oneof"`
+}
+
+func (*CommandMessage_CommandRequest) isCommandMessage_Message() {}
+
+func (*CommandMessage_CommandResponse) isCommandMessage_Message() {}
+
 type CommandRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Command       string                 `protobuf:"bytes,1,opt,name=command,proto3" json:"command,omitempty"`
@@ -31,7 +113,7 @@ type CommandRequest struct {
 
 func (x *CommandRequest) Reset() {
 	*x = CommandRequest{}
-	mi := &file_echo_proto_msgTypes[0]
+	mi := &file_echo_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +125,7 @@ func (x *CommandRequest) String() string {
 func (*CommandRequest) ProtoMessage() {}
 
 func (x *CommandRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_echo_proto_msgTypes[0]
+	mi := &file_echo_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +138,7 @@ func (x *CommandRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandRequest.ProtoReflect.Descriptor instead.
 func (*CommandRequest) Descriptor() ([]byte, []int) {
-	return file_echo_proto_rawDescGZIP(), []int{0}
+	return file_echo_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CommandRequest) GetCommand() string {
@@ -82,7 +164,7 @@ type CommandResponse struct {
 
 func (x *CommandResponse) Reset() {
 	*x = CommandResponse{}
-	mi := &file_echo_proto_msgTypes[1]
+	mi := &file_echo_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -94,7 +176,7 @@ func (x *CommandResponse) String() string {
 func (*CommandResponse) ProtoMessage() {}
 
 func (x *CommandResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_echo_proto_msgTypes[1]
+	mi := &file_echo_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -107,7 +189,7 @@ func (x *CommandResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandResponse.ProtoReflect.Descriptor instead.
 func (*CommandResponse) Descriptor() ([]byte, []int) {
-	return file_echo_proto_rawDescGZIP(), []int{1}
+	return file_echo_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CommandResponse) GetOutput() string {
@@ -122,14 +204,18 @@ var File_echo_proto protoreflect.FileDescriptor
 const file_echo_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"echo.proto\x12\agrpcapi\"@\n" +
+	"echo.proto\x12\agrpcapi\"\xa6\x01\n" +
+	"\x0eCommandMessage\x12B\n" +
+	"\x0fcommand_request\x18\x01 \x01(\v2\x17.grpcapi.CommandRequestH\x00R\x0ecommandRequest\x12E\n" +
+	"\x10command_response\x18\x02 \x01(\v2\x18.grpcapi.CommandResponseH\x00R\x0fcommandResponseB\t\n" +
+	"\amessage\"@\n" +
 	"\x0eCommandRequest\x12\x18\n" +
 	"\acommand\x18\x01 \x01(\tR\acommand\x12\x14\n" +
 	"\x05shell\x18\x02 \x01(\tR\x05shell\")\n" +
 	"\x0fCommandResponse\x12\x16\n" +
-	"\x06output\x18\x01 \x01(\tR\x06output2R\n" +
-	"\vEchoService\x12C\n" +
-	"\x0eExecuteCommand\x12\x17.grpcapi.CommandRequest\x1a\x18.grpcapi.CommandResponseB5Z3github.com/cardfaux/windows-connect/grpcapi;grpcapib\x06proto3"
+	"\x06output\x18\x01 \x01(\tR\x06output2U\n" +
+	"\vEchoService\x12F\n" +
+	"\x0eExecuteCommand\x12\x17.grpcapi.CommandMessage\x1a\x17.grpcapi.CommandMessage(\x010\x01B5Z3github.com/cardfaux/windows-connect/grpcapi;grpcapib\x06proto3"
 
 var (
 	file_echo_proto_rawDescOnce sync.Once
@@ -143,19 +229,22 @@ func file_echo_proto_rawDescGZIP() []byte {
 	return file_echo_proto_rawDescData
 }
 
-var file_echo_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_echo_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_echo_proto_goTypes = []any{
-	(*CommandRequest)(nil),  // 0: grpcapi.CommandRequest
-	(*CommandResponse)(nil), // 1: grpcapi.CommandResponse
+	(*CommandMessage)(nil),  // 0: grpcapi.CommandMessage
+	(*CommandRequest)(nil),  // 1: grpcapi.CommandRequest
+	(*CommandResponse)(nil), // 2: grpcapi.CommandResponse
 }
 var file_echo_proto_depIdxs = []int32{
-	0, // 0: grpcapi.EchoService.ExecuteCommand:input_type -> grpcapi.CommandRequest
-	1, // 1: grpcapi.EchoService.ExecuteCommand:output_type -> grpcapi.CommandResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: grpcapi.CommandMessage.command_request:type_name -> grpcapi.CommandRequest
+	2, // 1: grpcapi.CommandMessage.command_response:type_name -> grpcapi.CommandResponse
+	0, // 2: grpcapi.EchoService.ExecuteCommand:input_type -> grpcapi.CommandMessage
+	0, // 3: grpcapi.EchoService.ExecuteCommand:output_type -> grpcapi.CommandMessage
+	3, // [3:4] is the sub-list for method output_type
+	2, // [2:3] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_echo_proto_init() }
@@ -163,13 +252,17 @@ func file_echo_proto_init() {
 	if File_echo_proto != nil {
 		return
 	}
+	file_echo_proto_msgTypes[0].OneofWrappers = []any{
+		(*CommandMessage_CommandRequest)(nil),
+		(*CommandMessage_CommandResponse)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_echo_proto_rawDesc), len(file_echo_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

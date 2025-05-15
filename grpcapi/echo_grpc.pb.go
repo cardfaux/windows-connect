@@ -26,7 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EchoServiceClient interface {
-	ExecuteCommand(ctx context.Context, in *CommandRequest, opts ...grpc.CallOption) (*CommandResponse, error)
+	ExecuteCommand(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[CommandMessage, CommandMessage], error)
 }
 
 type echoServiceClient struct {
@@ -37,21 +37,24 @@ func NewEchoServiceClient(cc grpc.ClientConnInterface) EchoServiceClient {
 	return &echoServiceClient{cc}
 }
 
-func (c *echoServiceClient) ExecuteCommand(ctx context.Context, in *CommandRequest, opts ...grpc.CallOption) (*CommandResponse, error) {
+func (c *echoServiceClient) ExecuteCommand(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[CommandMessage, CommandMessage], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CommandResponse)
-	err := c.cc.Invoke(ctx, EchoService_ExecuteCommand_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &EchoService_ServiceDesc.Streams[0], EchoService_ExecuteCommand_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &grpc.GenericClientStream[CommandMessage, CommandMessage]{ClientStream: stream}
+	return x, nil
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type EchoService_ExecuteCommandClient = grpc.BidiStreamingClient[CommandMessage, CommandMessage]
 
 // EchoServiceServer is the server API for EchoService service.
 // All implementations must embed UnimplementedEchoServiceServer
 // for forward compatibility.
 type EchoServiceServer interface {
-	ExecuteCommand(context.Context, *CommandRequest) (*CommandResponse, error)
+	ExecuteCommand(grpc.BidiStreamingServer[CommandMessage, CommandMessage]) error
 	mustEmbedUnimplementedEchoServiceServer()
 }
 
@@ -62,8 +65,8 @@ type EchoServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedEchoServiceServer struct{}
 
-func (UnimplementedEchoServiceServer) ExecuteCommand(context.Context, *CommandRequest) (*CommandResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ExecuteCommand not implemented")
+func (UnimplementedEchoServiceServer) ExecuteCommand(grpc.BidiStreamingServer[CommandMessage, CommandMessage]) error {
+	return status.Errorf(codes.Unimplemented, "method ExecuteCommand not implemented")
 }
 func (UnimplementedEchoServiceServer) mustEmbedUnimplementedEchoServiceServer() {}
 func (UnimplementedEchoServiceServer) testEmbeddedByValue()                     {}
@@ -86,23 +89,12 @@ func RegisterEchoServiceServer(s grpc.ServiceRegistrar, srv EchoServiceServer) {
 	s.RegisterService(&EchoService_ServiceDesc, srv)
 }
 
-func _EchoService_ExecuteCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CommandRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EchoServiceServer).ExecuteCommand(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: EchoService_ExecuteCommand_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EchoServiceServer).ExecuteCommand(ctx, req.(*CommandRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+func _EchoService_ExecuteCommand_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(EchoServiceServer).ExecuteCommand(&grpc.GenericServerStream[CommandMessage, CommandMessage]{ServerStream: stream})
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type EchoService_ExecuteCommandServer = grpc.BidiStreamingServer[CommandMessage, CommandMessage]
 
 // EchoService_ServiceDesc is the grpc.ServiceDesc for EchoService service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -110,12 +102,14 @@ func _EchoService_ExecuteCommand_Handler(srv interface{}, ctx context.Context, d
 var EchoService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "grpcapi.EchoService",
 	HandlerType: (*EchoServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "ExecuteCommand",
-			Handler:    _EchoService_ExecuteCommand_Handler,
+			StreamName:    "ExecuteCommand",
+			Handler:       _EchoService_ExecuteCommand_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "echo.proto",
 }

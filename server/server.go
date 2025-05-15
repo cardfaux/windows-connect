@@ -2,12 +2,10 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"log"
 	"net"
 	"os"
-	"sync"
 
 	"github.com/cardfaux/windows-connect/grpcapi"
 	"google.golang.org/grpc"
@@ -15,28 +13,80 @@ import (
 
 type server struct {
 	grpcapi.UnimplementedEchoServiceServer
-	mu              sync.Mutex
-	pendingCommand  string
 }
 
-func (s *server) ExecuteCommand(ctx context.Context, req *grpcapi.CommandRequest) (*grpcapi.CommandResponse, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *server) ExecuteCommand(stream grpcapi.EchoService_ExecuteCommandServer) error {
+	// Channel to send commands from stdin
+	cmdChan := make(chan *grpcapi.CommandMessage)
 
-	if req.Command == "GET_COMMAND" {
-		// Client is polling for a command
-		if s.pendingCommand != "" {
-			log.Printf("Sending command to client: %s", s.pendingCommand)
-			cmd := s.pendingCommand
-			s.pendingCommand = "" // Clear after sending
-			return &grpcapi.CommandResponse{Output: cmd}, nil
+	// Goroutine: read commands from stdin and send them as CommandRequest messages
+	go func() {
+		scanner := bufio.NewScanner(os.Stdin)
+		for {
+			fmt.Print("Enter command (prefix with shell if needed, e.g. 'bash: ls'): ")
+			if !scanner.Scan() {
+				close(cmdChan)
+				return
+			}
+			text := scanner.Text()
+
+			// Parse shell prefix if present
+			shell := ""
+			command := text
+			if idx := indexOfColon(text); idx != -1 {
+				shell = text[:idx]
+				command = text[idx+1:]
+			}
+
+			cmdMsg := &grpcapi.CommandMessage{
+				Message: &grpcapi.CommandMessage_CommandRequest{
+					CommandRequest: &grpcapi.CommandRequest{
+						Command: command,
+						Shell:   shell,
+					},
+				},
+			}
+			cmdChan <- cmdMsg
 		}
-		return &grpcapi.CommandResponse{Output: ""}, nil
+	}()
+
+	// Goroutine: receive outputs from client
+	go func() {
+		for {
+			msg, err := stream.Recv()
+			if err != nil {
+				log.Printf("Error receiving from client: %v", err)
+				return
+			}
+			switch m := msg.Message.(type) {
+			case *grpcapi.CommandMessage_CommandResponse:
+				output := m.CommandResponse.Output
+				log.Printf("Output from client:\n%s\n", output)
+			default:
+				log.Printf("Received unexpected message type from client")
+			}
+		}
+	}()
+
+	// Send commands from cmdChan to client
+	for cmd := range cmdChan {
+		if err := stream.Send(cmd); err != nil {
+			log.Printf("Error sending command to client: %v", err)
+			return err
+		}
 	}
 
-	// If not "GET_COMMAND", treat it as command output sent from client
-	log.Printf("Output from client:\n%s\n", req.Command)
-	return &grpcapi.CommandResponse{Output: "Output received."}, nil
+	return nil
+}
+
+// indexOfColon returns the index of the first colon in s or -1 if not found
+func indexOfColon(s string) int {
+	for i, c := range s {
+		if c == ':' {
+			return i
+		}
+	}
+	return -1
 }
 
 func main() {
@@ -46,24 +96,9 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	srv := &server{}
-	grpcapi.RegisterEchoServiceServer(s, srv)
+	grpcapi.RegisterEchoServiceServer(s, &server{})
 
-	// Optional: set a command from stdin
-	go func() {
-		scanner := bufio.NewScanner(os.Stdin)
-		for {
-			fmt.Print("Enter command to send to client: ")
-			if scanner.Scan() {
-				cmd := scanner.Text()
-				srv.mu.Lock()
-				srv.pendingCommand = cmd
-				srv.mu.Unlock()
-			}
-		}
-	}()
-
-	fmt.Println("gRPC server is listening on port 4444...")
+	fmt.Println("gRPC server listening on :4444...")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
